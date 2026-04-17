@@ -261,7 +261,7 @@ section{position:relative;z-index:1;}
 .sec-desc{color:var(--text-3);font-size:1.05rem;max-width:580px;margin:0 auto;line-height:1.7;}
 
 /* ── HERO ── */
-#home{min-height:100vh;padding:100px 24px 80px;display:flex;align-items:center;}
+#home{min-height:100vh;padding:100px 24px 80px;display:flex;align-items:center;perspective:1200px;}
 .hero-grid{max-width:1200px;margin:0 auto;width:100%;display:grid;grid-template-columns:1.15fr 1fr;gap:72px;align-items:center;}
 
 .hero-badge{
@@ -336,6 +336,76 @@ section{position:relative;z-index:1;}
 }
 .soc-btn:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);border-color:var(--border-strong);}
 
+/* Hero 3D scene */
+.hero-scene{
+  --sceneTiltX: 0;
+  --sceneTiltY: 0;
+  --sceneScroll: 0;
+  position:relative;
+  min-height:560px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transform-style:preserve-3d;
+  isolation:isolate;
+}
+.hero-ambient-glow{
+  position:absolute;inset:4% 2%;
+  border-radius:36px;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(0,113,227,.2), transparent 40%),
+    radial-gradient(circle at 90% 10%, rgba(88,86,214,.18), transparent 44%),
+    radial-gradient(circle at 50% 90%, rgba(0,199,190,.14), transparent 44%);
+  filter:blur(6px);
+  transform:translate3d(0,calc(var(--sceneScroll) * -1px),-80px) scale(1.04);
+  z-index:1;
+  animation:heroGlow 8s ease-in-out infinite alternate;
+}
+.hero-grid-ring{
+  position:absolute;width:420px;height:420px;border-radius:50%;
+  border:1px solid rgba(0,113,227,.26);
+  box-shadow:inset 0 0 0 12px rgba(0,113,227,.14),0 0 40px rgba(0,113,227,.08);
+  transform:translate3d(0,calc(var(--sceneScroll) * -.45px),-40px) rotateX(70deg);
+  z-index:2;
+}
+.hero-floating-card{
+  position:absolute;
+  padding:10px 14px;border-radius:var(--radius-sm);
+  font-size:12px;font-weight:700;
+  background:rgba(255,255,255,.92);
+  border:1px solid var(--border);
+  backdrop-filter:var(--blur-sm);
+  box-shadow:var(--shadow-md);
+  z-index:3;
+}
+.hero-fc-inner{display:flex;align-items:center;gap:8px;}
+.hero-floating-card i{font-size:13px;}
+.hero-fc-1{
+  top:14%;left:0;
+  color:var(--blue);
+  transform:translate3d(0,calc(var(--sceneScroll) * -.9px),90px);
+}
+.hero-fc-2{
+  right:0;bottom:12%;
+  color:var(--indigo);
+  transform:translate3d(0,calc(var(--sceneScroll) * -.6px),80px);
+}
+.hero-fc-inner-a{animation:heroFloatA 6s ease-in-out infinite;}
+.hero-fc-inner-b{animation:heroFloatB 7s ease-in-out infinite;}
+.hero-3d-stage{
+  position:relative;
+  z-index:4;
+  transform-style:preserve-3d;
+  transform:
+    translate3d(0,calc(var(--sceneScroll) * -1px),0)
+    rotateX(calc(var(--sceneTiltX) * 1deg))
+    rotateY(calc(var(--sceneTiltY) * 1deg));
+  transition:transform .2s cubic-bezier(.22,.61,.36,1);
+}
+@keyframes heroFloatA{from{transform:translateY(0)}50%{transform:translateY(-12px)}to{transform:translateY(0)}}
+@keyframes heroFloatB{from{transform:translateY(0)}50%{transform:translateY(-14px)}to{transform:translateY(0)}}
+@keyframes heroGlow{0%{filter:blur(6px) saturate(1)}100%{filter:blur(10px) saturate(1.18)}}
+
 /* Trust badges */
 .trust-strip{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:20px;}
 .trust-badge{
@@ -346,7 +416,18 @@ section{position:relative;z-index:1;}
   backdrop-filter:blur(8px);
 }
 
-@media(max-width:900px){.hero-grid{grid-template-columns:1fr;gap:48px;}.stats-row{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:900px){
+  .hero-grid{grid-template-columns:1fr;gap:48px;}
+  .stats-row{grid-template-columns:repeat(2,1fr);}
+  .hero-scene{min-height:500px;}
+  .hero-fc-1{left:8px;top:8%;}
+  .hero-fc-2{right:8px;bottom:8%;}
+}
+@media(max-width:640px){
+  .hero-scene{min-height:440px;}
+  .hero-grid-ring{width:320px;height:320px;}
+  .hero-floating-card{font-size:11px;padding:8px 11px;}
+}
 
 /* ── SERVICES ── */
 #services{padding:100px 24px;background:linear-gradient(180deg,transparent,rgba(0,113,227,.025) 50%,transparent);}
@@ -766,46 +847,54 @@ footer a:hover{color:#0050a0;}
       </div>
     </div>
 
-    <!-- RIGHT: Profile Card -->
+    <!-- RIGHT: 3D Profile Scene -->
     <div class="float-anim">
-      <div class="profile-card">
-        <div class="avatar-ring">
-          <img src="https://avatars.githubusercontent.com/u/187093783?v=4" alt="Muhammad Kashif – Python Automation Expert, Rawalpindi Pakistan" width="100" height="100" loading="eager">
-          <div class="online-dot" aria-label="Available"></div>
-        </div>
-        <h2 class="p-name">Muhammad Kashif</h2>
-        <p class="p-role grad-text">Lead Web Scraper &amp; Python Expert</p>
-        <p class="p-loc"><i class="fas fa-map-marker-alt" style="color:var(--blue);font-size:11px;"></i> Allahabad Westridge III, Rawalpindi</p>
+      <div class="hero-scene" id="heroScene">
+        <div class="hero-ambient-glow" aria-hidden="true"></div>
+        <div class="hero-grid-ring" aria-hidden="true"></div>
+        <div class="hero-floating-card hero-fc-1"><span class="hero-fc-inner hero-fc-inner-a"><i class="fas fa-cube"></i> 3D Motion UI</span></div>
+        <div class="hero-floating-card hero-fc-2"><span class="hero-fc-inner hero-fc-inner-b"><i class="fas fa-sparkles"></i> Scroll Depth FX</span></div>
+        <div class="hero-3d-stage">
+          <div class="profile-card">
+            <div class="avatar-ring">
+              <img src="https://avatars.githubusercontent.com/u/187093783?v=4" alt="Muhammad Kashif – Python Automation Expert, Rawalpindi Pakistan" width="100" height="100" loading="eager">
+              <div class="online-dot" aria-label="Available"></div>
+            </div>
+            <h2 class="p-name">Muhammad Kashif</h2>
+            <p class="p-role grad-text">Lead Web Scraper &amp; Python Expert</p>
+            <p class="p-loc"><i class="fas fa-map-marker-alt" style="color:var(--blue);font-size:11px;"></i> Allahabad Westridge III, Rawalpindi</p>
 
-        <div class="p-contacts">
-          <a href="tel:+923171338662" class="p-contact-row">
-            <i class="fas fa-phone-alt" style="color:var(--green);"></i>
-            <span>+92 317 1338662 (WhatsApp)</span>
-          </a>
-          <a href="mailto:m.kashifact@gmail.com" class="p-contact-row">
-            <i class="fas fa-envelope" style="color:var(--blue);"></i>
-            <span>m.kashifact@gmail.com</span>
-          </a>
-          <a href="https://www.linkedin.com/in/kashif-fazal/" target="_blank" rel="noopener noreferrer" class="p-contact-row">
-            <i class="fab fa-linkedin" style="color:#0077b5;"></i>
-            <span>linkedin.com/in/kashif-fazal</span>
-          </a>
-        </div>
+            <div class="p-contacts">
+              <a href="tel:+923171338662" class="p-contact-row">
+                <i class="fas fa-phone-alt" style="color:var(--green);"></i>
+                <span>+92 317 1338662 (WhatsApp)</span>
+              </a>
+              <a href="mailto:m.kashifact@gmail.com" class="p-contact-row">
+                <i class="fas fa-envelope" style="color:var(--blue);"></i>
+                <span>m.kashifact@gmail.com</span>
+              </a>
+              <a href="https://www.linkedin.com/in/kashif-fazal/" target="_blank" rel="noopener noreferrer" class="p-contact-row">
+                <i class="fab fa-linkedin" style="color:#0077b5;"></i>
+                <span>linkedin.com/in/kashif-fazal</span>
+              </a>
+            </div>
 
-        <div class="p-pills">
-          <span class="pill p-blue">Python</span>
-          <span class="pill p-indigo">Web Scraping</span>
-          <span class="pill p-teal">WordPress</span>
-          <span class="pill p-orange">Server Mgmt</span>
-          <span class="pill p-green">IBM Certified</span>
-          <span class="pill p-rose">SEO Expert</span>
-        </div>
+            <div class="p-pills">
+              <span class="pill p-blue">Python</span>
+              <span class="pill p-indigo">Web Scraping</span>
+              <span class="pill p-teal">WordPress</span>
+              <span class="pill p-orange">Server Mgmt</span>
+              <span class="pill p-green">IBM Certified</span>
+              <span class="pill p-rose">SEO Expert</span>
+            </div>
 
-        <div class="p-socials">
-          <a href="https://github.com/Mkashiii" target="_blank" rel="noopener noreferrer" class="soc-btn" aria-label="GitHub"><i class="fab fa-github"></i></a>
-          <a href="https://www.linkedin.com/in/kashif-fazal/" target="_blank" rel="noopener noreferrer" class="soc-btn" aria-label="LinkedIn"><i class="fab fa-linkedin-in" style="color:#0077b5;"></i></a>
-          <a href="https://www.instagram.com/m_kashiinsta/" target="_blank" rel="noopener noreferrer" class="soc-btn" aria-label="Instagram"><i class="fab fa-instagram" style="color:#e1306c;"></i></a>
-          <a href="https://7thclub.com/" target="_blank" rel="noopener noreferrer" class="soc-btn" aria-label="7thClub"><i class="fas fa-globe" style="color:var(--teal);"></i></a>
+            <div class="p-socials">
+              <a href="https://github.com/Mkashiii" target="_blank" rel="noopener noreferrer" class="soc-btn" aria-label="GitHub"><i class="fab fa-github"></i></a>
+              <a href="https://www.linkedin.com/in/kashif-fazal/" target="_blank" rel="noopener noreferrer" class="soc-btn" aria-label="LinkedIn"><i class="fab fa-linkedin-in" style="color:#0077b5;"></i></a>
+              <a href="https://www.instagram.com/m_kashiinsta/" target="_blank" rel="noopener noreferrer" class="soc-btn" aria-label="Instagram"><i class="fab fa-instagram" style="color:#e1306c;"></i></a>
+              <a href="https://7thclub.com/" target="_blank" rel="noopener noreferrer" class="soc-btn" aria-label="7thClub"><i class="fas fa-globe" style="color:var(--teal);"></i></a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1599,6 +1688,49 @@ let wi=0,ci=0,del=false;
 const tEl=document.getElementById('typeTarget');
 function type(){const w=words[wi];tEl.textContent=del?w.substring(0,ci-1):w.substring(0,ci+1);del?ci--:ci++;if(!del&&ci===w.length){del=true;setTimeout(type,1800);return;}if(del&&ci===0){del=false;wi=(wi+1)%words.length;setTimeout(type,400);return;}setTimeout(type,del?45:90);}
 setTimeout(type,800);
+
+// HERO 3D MOTION
+const heroScene=document.getElementById('heroScene');
+if(heroScene){
+  const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const homeSection=document.getElementById('home');
+  const clamp=(value,min,max)=>Math.min(Math.max(value,min),max);
+  let targetX=0,targetY=0,currentX=0,currentY=0;
+
+  const syncHeroScroll=()=>{
+    if(reducedMotion)return;
+    const sectionRect=homeSection.getBoundingClientRect();
+    const totalTravel=innerHeight+sectionRect.height;
+    const traveledDistance=innerHeight-sectionRect.top;
+    const normalizedProgress=traveledDistance/totalTravel;
+    const progress=clamp(normalizedProgress,0,1);
+    heroScene.style.setProperty('--sceneScroll',(progress*30).toFixed(2));
+  };
+
+  if(!reducedMotion){
+    heroScene.addEventListener('mousemove',e=>{
+      const sceneRect=heroScene.getBoundingClientRect();
+      const relativeX=(e.clientX-sceneRect.left)/sceneRect.width;
+      const relativeY=(e.clientY-sceneRect.top)/sceneRect.height;
+      const normalizedX=relativeX-.5;
+      const normalizedY=relativeY-.5;
+      targetY=normalizedX*14;
+      targetX=-normalizedY*10;
+    });
+    heroScene.addEventListener('mouseleave',()=>{targetX=0;targetY=0;});
+
+    (function animateHeroTilt(){
+      currentX+=(targetX-currentX)*.12;
+      currentY+=(targetY-currentY)*.12;
+      heroScene.style.setProperty('--sceneTiltX',currentX.toFixed(2));
+      heroScene.style.setProperty('--sceneTiltY',currentY.toFixed(2));
+      requestAnimationFrame(animateHeroTilt);
+    })();
+
+    window.addEventListener('scroll',syncHeroScroll,{passive:true});
+    syncHeroScroll();
+  }
+}
 
 // FAQ
 document.querySelectorAll('.faq-q').forEach(q=>q.addEventListener('click',()=>{const item=q.parentElement,was=item.classList.contains('open');document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));if(!was)item.classList.add('open');}));

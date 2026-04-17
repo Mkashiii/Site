@@ -370,7 +370,6 @@ section{position:relative;z-index:1;}
 }
 .hero-floating-card{
   position:absolute;
-  display:flex;align-items:center;gap:8px;
   padding:10px 14px;border-radius:var(--radius-sm);
   font-size:12px;font-weight:700;
   background:rgba(255,255,255,.92);
@@ -379,19 +378,20 @@ section{position:relative;z-index:1;}
   box-shadow:var(--shadow-md);
   z-index:3;
 }
+.hero-fc-inner{display:flex;align-items:center;gap:8px;}
 .hero-floating-card i{font-size:13px;}
 .hero-fc-1{
   top:14%;left:0;
   color:var(--blue);
   transform:translate3d(0,calc(var(--sceneScroll) * -.9px),90px);
-  animation:heroFloatA 6s ease-in-out infinite;
 }
 .hero-fc-2{
   right:0;bottom:12%;
   color:var(--indigo);
   transform:translate3d(0,calc(var(--sceneScroll) * -.6px),80px);
-  animation:heroFloatB 7s ease-in-out infinite;
 }
+.hero-fc-inner-a{animation:heroFloatA 6s ease-in-out infinite;}
+.hero-fc-inner-b{animation:heroFloatB 7s ease-in-out infinite;}
 .hero-3d-stage{
   position:relative;
   z-index:4;
@@ -402,8 +402,8 @@ section{position:relative;z-index:1;}
     rotateY(calc(var(--sceneTiltY) * 1deg));
   transition:transform .2s cubic-bezier(.22,.61,.36,1);
 }
-@keyframes heroFloatA{from{transform:translate3d(0,0,90px)}50%{transform:translate3d(0,-12px,90px)}to{transform:translate3d(0,0,90px)}}
-@keyframes heroFloatB{from{transform:translate3d(0,0,80px)}50%{transform:translate3d(0,-14px,80px)}to{transform:translate3d(0,0,80px)}}
+@keyframes heroFloatA{from{transform:translateY(0)}50%{transform:translateY(-12px)}to{transform:translateY(0)}}
+@keyframes heroFloatB{from{transform:translateY(0)}50%{transform:translateY(-14px)}to{transform:translateY(0)}}
 @keyframes heroGlow{0%{filter:blur(6px) saturate(1)}100%{filter:blur(10px) saturate(1.18)}}
 
 /* Trust badges */
@@ -852,8 +852,8 @@ footer a:hover{color:#0050a0;}
       <div class="hero-scene" id="heroScene">
         <div class="hero-ambient-glow" aria-hidden="true"></div>
         <div class="hero-grid-ring" aria-hidden="true"></div>
-        <div class="hero-floating-card hero-fc-1" aria-hidden="true"><i class="fas fa-cube"></i> 3D Motion UI</div>
-        <div class="hero-floating-card hero-fc-2" aria-hidden="true"><i class="fas fa-sparkles"></i> Scroll Depth FX</div>
+        <div class="hero-floating-card hero-fc-1"><span class="hero-fc-inner hero-fc-inner-a"><i class="fas fa-cube"></i> 3D Motion UI</span></div>
+        <div class="hero-floating-card hero-fc-2"><span class="hero-fc-inner hero-fc-inner-b"><i class="fas fa-sparkles"></i> Scroll Depth FX</span></div>
         <div class="hero-3d-stage">
           <div class="profile-card">
             <div class="avatar-ring">
@@ -1700,7 +1700,9 @@ if(heroScene){
   const syncHeroScroll=()=>{
     if(reducedMotion)return;
     const sectionRect=homeSection.getBoundingClientRect();
-    const normalizedProgress=(innerHeight-sectionRect.top)/(innerHeight+sectionRect.height);
+    const totalTravel=innerHeight+sectionRect.height;
+    const traveledDistance=innerHeight-sectionRect.top;
+    const normalizedProgress=traveledDistance/totalTravel;
     const progress=clamp(normalizedProgress,0,1);
     heroScene.style.setProperty('--sceneScroll',(progress*30).toFixed(2));
   };

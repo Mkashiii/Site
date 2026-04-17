@@ -363,8 +363,8 @@ section{position:relative;z-index:1;}
 }
 .hero-grid-ring{
   position:absolute;width:420px;height:420px;border-radius:50%;
-  border:1px solid rgba(0,113,227,.18);
-  box-shadow:inset 0 0 0 12px rgba(255,255,255,.3);
+  border:1px solid rgba(0,113,227,.26);
+  box-shadow:inset 0 0 0 12px rgba(0,113,227,.14),0 0 40px rgba(0,113,227,.08);
   transform:translate3d(0,calc(var(--sceneScroll) * -.45px),-40px) rotateX(70deg);
   z-index:2;
 }
@@ -373,7 +373,7 @@ section{position:relative;z-index:1;}
   display:flex;align-items:center;gap:8px;
   padding:10px 14px;border-radius:var(--radius-sm);
   font-size:12px;font-weight:700;
-  background:rgba(255,255,255,.76);
+  background:rgba(255,255,255,.92);
   border:1px solid var(--border);
   backdrop-filter:var(--blur-sm);
   box-shadow:var(--shadow-md);
@@ -1698,18 +1698,18 @@ if(heroScene){
 
   const syncHeroScroll=()=>{
     if(reducedMotion)return;
-    const r=homeSection.getBoundingClientRect();
-    const progress=Math.min(Math.max((innerHeight-r.top)/(innerHeight+r.height),0),1);
+    const sectionRect=homeSection.getBoundingClientRect();
+    const progress=Math.min(Math.max((innerHeight-sectionRect.top)/(innerHeight+sectionRect.height),0),1);
     heroScene.style.setProperty('--sceneScroll',(progress*30).toFixed(2));
   };
 
   if(!reducedMotion){
     heroScene.addEventListener('mousemove',e=>{
-      const r=heroScene.getBoundingClientRect();
-      const px=(e.clientX-r.left)/r.width-.5;
-      const py=(e.clientY-r.top)/r.height-.5;
-      targetY=px*14;
-      targetX=-py*10;
+      const sceneRect=heroScene.getBoundingClientRect();
+      const normalizedX=(e.clientX-sceneRect.left)/sceneRect.width-.5;
+      const normalizedY=(e.clientY-sceneRect.top)/sceneRect.height-.5;
+      targetY=normalizedX*14;
+      targetX=-normalizedY*10;
     });
     heroScene.addEventListener('mouseleave',()=>{targetX=0;targetY=0;});
 

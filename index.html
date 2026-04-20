@@ -69,6 +69,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 
 <style>
 /* ═══════════════════════════════════════════
@@ -147,6 +149,10 @@ body::after {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
 }
 
+/* Custom Cursor */
+.cursor-dot{position:fixed;width:10px;height:10px;background:var(--blue);border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);z-index:9999;mix-blend-mode:difference;transition:width .3s,height .3s;}
+.cursor-outline{position:fixed;width:40px;height:40px;border:2px solid var(--blue);border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);z-index:9998;transition:top .1s,left .1s,width .3s,height .3s,opacity .3s;mix-blend-mode:difference;}
+
 /* Floating orbs */
 .orb-wrap{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
 .orb{position:absolute;border-radius:50%;filter:blur(80px);}
@@ -157,6 +163,39 @@ body::after {
 @keyframes drift1{to{transform:translate(80px,60px)}}
 @keyframes drift2{to{transform:translate(-60px,80px)}}
 @keyframes drift3{to{transform:translate(40px,-60px)}}
+
+/* Preloader */
+.preloader{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--white);display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:10000;transition:opacity .8s ease;}
+.loading-bar{width:300px;height:4px;background:rgba(0,0,0,0.1);border-radius:2px;overflow:hidden;margin-top:20px;}
+.loading-progress{height:100%;width:0%;background:var(--gradient-brand);transition:width .4s ease;}
+.loading-text{font-family:'Sora',sans-serif;font-size:18px;color:var(--text-1);margin-bottom:10px;}
+.percent{font-family:'Sora',sans-serif;font-size:14px;color:var(--text-2);}
+
+/* Scroll indicator animation */
+.scroll-indicator{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;animation:bounce 2s infinite;}
+@keyframes bounce{0%,20%,50%,80%,100%{transform:translateY(0) translateX(-50%);}40%{transform:translateY(-20px) translateX(-50%);}60%{transform:translateY(-10px) translateX(-50%);}}
+.scroll-text{font-family:'Sora',sans-serif;font-size:12px;color:var(--text-3);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;}
+.scroll-arrow{width:2px;height:40px;background:var(--text-3);position:relative;}
+.scroll-arrow::after{content:'';position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:10px;height:10px;border-right:2px solid var(--text-3);border-bottom:2px solid var(--text-3);transform:rotate(45deg);}
+
+/* Marquee */
+.marquee-container{background:var(--text-1);color:var(--white);padding:16px 0;white-space:nowrap;overflow:hidden;position:relative;}
+.marquee-content{display:inline-block;animation:marquee 20s linear infinite;}
+.marquee-item{display:inline-block;padding:0 40px;font-family:'Sora',sans-serif;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:2px;}
+@keyframes marquee{0%{transform:translateX(100%);}100%{transform:translateX(-100%);}}
+
+/* Enhanced card hover effects */
+.glass-card-3d{transition:all .4s cubic-bezier(.175,.885,.32,1.275);transform-style:preserve-3d;}
+.glass-card-3d:hover{transform:perspective(1000px) rotateY(5deg) rotateX(5deg) translateY(-10px);box-shadow:var(--shadow-xl);}
+
+/* Text reveal animations */
+.text-reveal{overflow:hidden;}
+.text-reveal span{display:inline-block;transform:translateY(100%);}
+
+/* Gradient border animation */
+.gradient-border{position:relative;background:var(--surface-1);border-radius:var(--radius-lg);}
+.gradient-border::before{content:'';position:absolute;inset:-2px;border-radius:var(--radius-lg);background:var(--gradient-brand);z-index:-1;opacity:0;transition:opacity .3s;}
+.gradient-border:hover::before{opacity:1;}
 
 /* ── SCROLL PROGRESS ── */
 #progress-bar{position:fixed;top:0;left:0;height:2.5px;z-index:9999;background:var(--gradient-brand);width:0;transition:width .1s;}
@@ -768,13 +807,22 @@ footer a:hover{color:#0050a0;}
 </head>
 
 <body>
+<!-- Preloader -->
+<div class="preloader" id="preloader">
+  <div class="loading-text">Loading Masterpieces</div>
+  <div class="loading-bar">
+    <div class="loading-progress" id="loading-progress"></div>
+  </div>
+  <div class="percent" id="percent">0%</div>
+</div>
+
 <div class="orb-wrap" aria-hidden="true">
   <div class="orb orb-1"></div><div class="orb orb-2"></div>
   <div class="orb orb-3"></div><div class="orb orb-4"></div>
 </div>
 
 <div class="cursor-dot" id="cursorDot"></div>
-<div class="cursor-ring" id="cursorRing"></div>
+<div class="cursor-outline" id="cursorOutline"></div>
 <div id="progress-bar"></div>
 
 <!-- ══════════ NAV ══════════ -->
@@ -806,18 +854,23 @@ footer a:hover{color:#0050a0;}
     <!-- LEFT -->
     <div>
       <div class="hero-badge"><span class="dot"></span>Available for Freelance &amp; Remote Work</div>
-      <h1 class="hero-h1">
+      <h1 class="hero-h1 text-reveal">
         <span class="grad-text">Muhammad<br>Kashif</span>
       </h1>
       <p class="hero-subtitle"><span id="typeTarget">Python Automation Expert</span></p>
-      <p class="hero-para">
+      <p class="hero-para reveal">
         Pakistan's top-rated <strong>web scraping specialist</strong> and <strong>WordPress developer</strong> based in Rawalpindi. I turn complex automation challenges into elegant, revenue-generating solutions — serving clients across the US, UK, and beyond.
       </p>
-      <div class="hero-btns">
+      <div class="hero-btns reveal">
         <a href="#contact" class="btn-primary"><i class="fas fa-paper-plane"></i> Get In Touch</a>
         <a href="#projects" class="btn-outline"><i class="fas fa-laptop-code"></i> View Projects</a>
         <a href="https://www.linkedin.com/in/kashif-fazal/" target="_blank" rel="noopener noreferrer" class="btn-outline"><i class="fab fa-linkedin"></i></a>
         <a href="https://github.com/Mkashiii" target="_blank" rel="noopener noreferrer" class="btn-outline"><i class="fab fa-github"></i></a>
+      </div>
+      
+      <div class="scroll-indicator">
+        <div class="scroll-text">SCROLL TO EXPLORE</div>
+        <div class="scroll-arrow"></div>
       </div>
 
       <div class="trust-strip" style="margin-bottom:32px;">
@@ -829,19 +882,19 @@ footer a:hover{color:#0050a0;}
 
       <div class="stats-row">
         <div class="stat-chip reveal r1">
-          <div class="stat-num grad-text">3+</div>
+          <div class="stat-num grad-text stat-counter" data-target="3">3+</div>
           <div class="stat-lbl">Years Experience</div>
         </div>
         <div class="stat-chip reveal r2">
-          <div class="stat-num" style="color:var(--indigo);">100+</div>
+          <div class="stat-num" style="color:var(--indigo);" class="stat-counter" data-target="100">100+</div>
           <div class="stat-lbl">Projects Done</div>
         </div>
         <div class="stat-chip reveal r3">
-          <div class="stat-num" style="color:var(--teal);">50+</div>
+          <div class="stat-num" style="color:var(--teal);" class="stat-counter" data-target="50">50+</div>
           <div class="stat-lbl">Happy Clients</div>
         </div>
         <div class="stat-chip reveal r4">
-          <div class="stat-num" style="color:var(--orange);">20+</div>
+          <div class="stat-num" style="color:var(--orange);" class="stat-counter" data-target="20">20+</div>
           <div class="stat-lbl">WP Plugins</div>
         </div>
       </div>
@@ -912,7 +965,7 @@ footer a:hover{color:#0050a0;}
 
     <div class="services-grid">
       <!-- Python Automation -->
-      <div class="svc-card glass reveal">
+      <div class="svc-card glass service-card reveal">
         <div class="svc-icon" style="background:rgba(0,113,227,.08);"><i class="fab fa-python" style="color:var(--blue);"></i></div>
         <h3>Python Automation</h3>
         <p>Custom Python scripts and desktop apps that eliminate repetitive tasks and let your team focus on high-value work.</p>
@@ -926,7 +979,7 @@ footer a:hover{color:#0050a0;}
       </div>
 
       <!-- Web Scraping -->
-      <div class="svc-card glass reveal r1">
+      <div class="svc-card glass service-card reveal r1">
         <div class="svc-icon" style="background:rgba(88,86,214,.08);"><i class="fas fa-spider" style="color:var(--indigo);"></i></div>
         <h3>Web Scraping &amp; Data Extraction</h3>
         <p>Production-grade scrapers that collect, clean, and deliver structured data from virtually any source — at any scale.</p>
@@ -940,7 +993,7 @@ footer a:hover{color:#0050a0;}
       </div>
 
       <!-- WordPress -->
-      <div class="svc-card glass reveal r2">
+      <div class="svc-card glass service-card reveal r2">
         <div class="svc-icon" style="background:rgba(0,199,190,.08);"><i class="fab fa-wordpress" style="color:var(--teal);"></i></div>
         <h3>WordPress Development</h3>
         <p>Full-stack WordPress builds — from custom themes and plugin creation to high-traffic news portals and e-commerce stores.</p>
@@ -1272,8 +1325,8 @@ footer a:hover{color:#0050a0;}
     <div style="margin-top:80px;">
       <h3 class="flip-section-title">WordPress Projects &amp; Plugins</h3>
       <p class="flip-section-sub">Hover to reveal details</p>
-      <div class="flip-grid">
-        <div class="flip-card">
+      <div class="flip-grid projects-grid">
+        <div class="flip-card project-item glass-card-3d">
           <div class="flip-inner">
             <div class="flip-face flip-front">
               <div class="flip-icon-box" style="background:rgba(0,113,227,.08);"><i class="fab fa-wordpress" style="color:var(--blue);"></i></div>
@@ -1285,7 +1338,7 @@ footer a:hover{color:#0050a0;}
             </div>
           </div>
         </div>
-        <div class="flip-card">
+        <div class="flip-card project-item glass-card-3d">
           <div class="flip-inner">
             <div class="flip-face flip-front">
               <div class="flip-icon-box" style="background:rgba(88,86,214,.08);"><i class="fas fa-globe" style="color:var(--indigo);"></i></div>
@@ -1297,7 +1350,7 @@ footer a:hover{color:#0050a0;}
             </div>
           </div>
         </div>
-        <div class="flip-card">
+        <div class="flip-card project-item glass-card-3d">
           <div class="flip-inner">
             <div class="flip-face flip-front">
               <div class="flip-icon-box" style="background:rgba(0,199,190,.08);"><i class="fas fa-server" style="color:var(--teal);"></i></div>
@@ -1433,8 +1486,8 @@ footer a:hover{color:#0050a0;}
       <h2 class="sec-title" id="testi-heading">What Clients <span class="grad-text">Say</span></h2>
       <p class="sec-desc">Real feedback from clients across the UK, US, and Pakistan who trusted Muhammad Kashif with their projects.</p>
     </div>
-    <div class="testi-grid">
-      <div class="testi-card glass glass-hover reveal">
+    <div class="testi-grid testimonials-grid">
+      <div class="testi-card glass glass-hover testimonial-card reveal">
         <div class="testi-stars">★★★★★</div>
         <p>"Kashif delivered an exceptional Google Maps scraper with a professional GUI. The code was clean, well-documented, and handled anti-bot measures perfectly. Highly recommend for any Python automation work."</p>
         <div class="testi-author">
@@ -1442,7 +1495,7 @@ footer a:hover{color:#0050a0;}
           <div><div class="testi-name">James L.</div><div class="testi-loc">🇬🇧 United Kingdom</div></div>
         </div>
       </div>
-      <div class="testi-card glass glass-hover reveal r1">
+      <div class="testi-card glass glass-hover testimonial-card reveal r1">
         <div class="testi-stars">★★★★★</div>
         <p>"Built our news portal from scratch — fast, SEO-optimised, and with a custom real-time data plugin. Our traffic grew 3x within the first month. Outstanding WordPress expertise."</p>
         <div class="testi-author">
@@ -1450,7 +1503,7 @@ footer a:hover{color:#0050a0;}
           <div><div class="testi-name">Ahmed R.</div><div class="testi-loc">🇵🇰 Pakistan</div></div>
         </div>
       </div>
-      <div class="testi-card glass glass-hover reveal r2">
+      <div class="testi-card glass glass-hover testimonial-card reveal r2">
         <div class="testi-stars">★★★★★</div>
         <p>"We needed a lead generation scraper built fast. Kashif delivered in 48 hours with thorough testing and documentation. Already using it for our B2B campaigns. Will hire again."</p>
         <div class="testi-author">
@@ -1643,14 +1696,222 @@ footer a:hover{color:#0050a0;}
 
 <!-- ══════════ SCRIPTS ══════════ -->
 <script>
+// Initialize GSAP
+gsap.registerPlugin(ScrollTrigger);
+
+// PRELOADER
+document.addEventListener('DOMContentLoaded', function() {
+  const preloader = document.getElementById('preloader');
+  const progressBar = document.getElementById('loading-progress');
+  const percentDisplay = document.getElementById('percent');
+  
+  let progress = 0;
+  const interval = setInterval(() => {
+    progress += Math.random() * 15;
+    if (progress >= 100) {
+      progress = 100;
+      clearInterval(interval);
+      
+      setTimeout(() => {
+        preloader.style.opacity = '0';
+        setTimeout(() => {
+          preloader.style.display = 'none';
+          initPageAnimations();
+        }, 500);
+      }, 300);
+    }
+    
+    progressBar.style.width = `${progress}%`;
+    percentDisplay.textContent = `${Math.round(progress)}%`;
+  }, 150);
+});
+
+function initPageAnimations() {
+  // Hero text reveal
+  const heroTitle = document.querySelector('.hero-h1');
+  if (heroTitle) {
+    const words = heroTitle.textContent.split(' ');
+    heroTitle.innerHTML = '';
+    words.forEach((word, i) => {
+      const span = document.createElement('span');
+      span.textContent = word + ' ';
+      span.style.display = 'inline-block';
+      span.style.opacity = '0';
+      span.style.transform = 'translateY(50px)';
+      heroTitle.appendChild(span);
+      
+      gsap.to(span, {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        delay: i * 0.1,
+        ease: 'power3.out'
+      });
+    });
+  }
+  
+  // Animate all sections with ScrollTrigger
+  gsap.utils.toArray('.reveal').forEach(element => {
+    gsap.fromTo(element,
+      { opacity: 0, y: 60 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        scrollTrigger: {
+          trigger: element,
+          start: 'top 85%',
+          toggleActions: 'play none none reverse'
+        }
+      }
+    );
+  });
+  
+  // Stats counter animation
+  gsap.utils.toArray('.stat-num').forEach(stat => {
+    const target = parseInt(stat.textContent);
+    gsap.fromTo(stat,
+      { innerText: 0 },
+      {
+        innerText: target,
+        duration: 2,
+        snap: { innerText: 1 },
+        scrollTrigger: {
+          trigger: stat.parentElement,
+          start: 'top 85%',
+          toggleActions: 'play none none reverse'
+        }
+      }
+    );
+  });
+  
+  // Service cards stagger
+  gsap.fromTo('.service-card',
+    { y: 50, opacity: 0 },
+    {
+      y: 0,
+      opacity: 1,
+      duration: 0.6,
+      stagger: 0.15,
+      scrollTrigger: {
+        trigger: '.services-grid',
+        start: 'top 80%'
+      }
+    }
+  );
+  
+  // Project cards animation
+  gsap.fromTo('.project-item',
+    { scale: 0.8, rotationY: -15, opacity: 0 },
+    {
+      scale: 1,
+      rotationY: 0,
+      opacity: 1,
+      duration: 0.7,
+      stagger: 0.1,
+      scrollTrigger: {
+        trigger: '.projects-grid',
+        start: 'top 80%'
+      }
+    }
+  );
+  
+  // Skill bars animation
+  gsap.utils.toArray('.skill-card').forEach((card, i) => {
+    gsap.fromTo(card,
+      { x: i % 2 === 0 ? -50 : 50, opacity: 0 },
+      {
+        x: 0,
+        opacity: 1,
+        duration: 0.6,
+        scrollTrigger: {
+          trigger: card,
+          start: 'top 85%'
+        }
+      }
+    );
+    
+    const barFill = card.querySelector('.bar-fill');
+    if (barFill) {
+      const width = barFill.dataset.w;
+      gsap.fromTo(barFill,
+        { width: 0 },
+        {
+          width: width + '%',
+          duration: 1.5,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: card,
+            start: 'top 80%'
+          }
+        }
+      );
+    }
+  });
+  
+  // Testimonial cards
+  gsap.fromTo('.testimonial-card',
+    { y: 40, opacity: 0 },
+    {
+      y: 0,
+      opacity: 1,
+      duration: 0.6,
+      stagger: 0.15,
+      scrollTrigger: {
+        trigger: '.testimonials-grid',
+        start: 'top 80%'
+      }
+    }
+  );
+  
+  // Experience timeline
+  gsap.utils.toArray('.timeline-item').forEach((item, i) => {
+    gsap.fromTo(item,
+      { x: -50, opacity: 0 },
+      {
+        x: 0,
+        opacity: 1,
+        duration: 0.7,
+        delay: i * 0.1,
+        scrollTrigger: {
+          trigger: item,
+          start: 'top 85%'
+        }
+      }
+    );
+  });
+}
+
 // CURSOR
-const dot = document.getElementById('cursorDot'), ring = document.getElementById('cursorRing');
-let mx=0,my=0,rx=0,ry=0;
-document.addEventListener('mousemove', e=>{mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px';});
-(function animRing(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing)})();
-document.querySelectorAll('a,button,.flip-card,.glass-hover').forEach(el=>{
-  el.addEventListener('mouseenter',()=>ring.classList.add('big'));
-  el.addEventListener('mouseleave',()=>ring.classList.remove('big'));
+const dot = document.getElementById('cursorDot'), outline = document.getElementById('cursorOutline');
+let posX = 0, posY = 0, dotX = 0, dotY = 0;
+
+document.addEventListener('mousemove', e => {
+  posX = e.clientX;
+  posY = e.clientY;
+});
+
+gsap.to({}, 0.016, {
+  repeat: -1,
+  onRepeat: () => {
+    dotX = gsap.utils.interpolate(dotX, posX, 0.3);
+    dotY = gsap.utils.interpolate(dotY, posY, 0.3);
+    
+    gsap.set(dot, { x: dotX - 5, y: dotY - 5 });
+    gsap.set(outline, { x: dotX - 20, y: dotY - 20 });
+  }
+});
+
+// Cursor hover effects
+document.querySelectorAll('a, button, .glass-hover, .project-item, .service-card').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    gsap.to(dot, { scale: 2, backgroundColor: 'var(--blue)', mixBlendMode: 'normal', duration: 0.3 });
+    gsap.to(outline, { scale: 2, borderColor: 'var(--blue)', opacity: 0.5, duration: 0.3 });
+  });
+  el.addEventListener('mouseleave', () => {
+    gsap.to(dot, { scale: 1, backgroundColor: 'var(--blue)', mixBlendMode: 'difference', duration: 0.3 });
+    gsap.to(outline, { scale: 1, borderColor: 'var(--blue)', opacity: 1, duration: 0.3 });
+  });
 });
 
 // NAVBAR
